@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 public class MovieController {
-    MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
     public MovieController(MovieRepository movieRepository) {
         this.movieRepository = movieRepository;
