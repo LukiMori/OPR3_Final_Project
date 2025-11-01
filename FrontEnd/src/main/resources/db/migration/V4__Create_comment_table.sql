@@ -1,0 +1,8 @@
+CREATE TABLE comments (
+    ID BIGSERIAL PRIMARY KEY,
+    movie_id BIGINT REFERENCES movies(ID) ON DELETE CASCADE,
+    user_id BIGINT REFERENCES users(ID) ON DELETE CASCADE,
+    content varchar(1000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    score int NOT NULL CHECK (score >= 1 AND score <= 5)
+);
