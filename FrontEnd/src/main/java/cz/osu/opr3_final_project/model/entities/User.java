@@ -26,6 +26,15 @@ public class User {
 
     @Column
     @ManyToMany
+    @JoinTable(
+            name = "users_favourite_movies",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id")
+    )
     private List<Movie> favouriteMovies;
+
+    @Column
+    @OneToMany(mappedBy = "user")
+    private List<Comment> comments;
 
 }

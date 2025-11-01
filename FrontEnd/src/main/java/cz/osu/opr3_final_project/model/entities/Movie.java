@@ -1,12 +1,13 @@
 package cz.osu.opr3_final_project.model.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import cz.osu.opr3_final_project.Enumerations.MovieGenre;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,14 +17,42 @@ import lombok.Setter;
 public class Movie {
     @Id
     @Column(unique = true, nullable = false)
-    private String id;
+    private Long id;
 
     @Column
     private String title;
 
     @Column
-    private String director;
+    private int releaseYear;
 
     @Column
-    private int releaseYear;
+    @ManyToMany
+    @JoinTable(
+            name = "movies_directors",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    private List<Person> director;
+
+    @Column
+    @ManyToMany
+    @JoinTable(
+            name = "movies_actors",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    private List<Person> actors;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private MovieGenre genre;
+
+    @Column
+    private double rating;
+
+    @Column
+    private String description;
+
+    @Column
+    private String posterUrl;
 }
