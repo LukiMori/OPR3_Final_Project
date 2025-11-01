@@ -1,7 +1,7 @@
 
 services:
   postgresql:
-    image: postgres:17
+    image: postgres:16
     container_name: 7OPR_FinalProject_DB
     restart: always
     environment:
