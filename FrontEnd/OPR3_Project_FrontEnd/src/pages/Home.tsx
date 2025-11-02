@@ -1,19 +1,19 @@
-import { useNavigate } from 'react-router-dom';
 import { Film, LogOut } from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        logout();
         navigate('/login');
     };
 
     return (
         <div className="min-h-screen bg-light dark:bg-dark-bg">
-            {/* Header */}
             <header className="bg-primary-dark dark:bg-dark-card shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
@@ -28,7 +28,7 @@ const Home = () => {
 
                         <div className="flex items-center gap-4">
               <span className="text-light dark:text-dark-text font-medium">
-                Welcome, {user.username}!
+                Welcome, {user?.username}!
               </span>
                             <DarkModeToggle />
                             <button
@@ -44,7 +44,6 @@ const Home = () => {
                 </div>
             </header>
 
-            {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="bg-white dark:bg-dark-card rounded-xl shadow-md p-8">
                     <h2 className="text-3xl font-bold text-primary-dark dark:text-dark-text mb-4">

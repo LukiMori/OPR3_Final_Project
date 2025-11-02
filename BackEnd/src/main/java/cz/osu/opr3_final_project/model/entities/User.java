@@ -13,9 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -24,7 +25,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column
     @ManyToMany
     @JoinTable(
             name = "users_favourite_movies",
@@ -33,8 +33,6 @@ public class User {
     )
     private List<Movie> favouriteMovies;
 
-    @Column
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
-
 }

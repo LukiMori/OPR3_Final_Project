@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Film, UserPlus } from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 
 interface SignupForm {
     username: string;
@@ -18,6 +20,7 @@ const Signup = () => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,35 +39,22 @@ const Signup = () => {
             return;
         }
 
+        if (formData.username.length < 3) {
+            setError('Username must be at least 3 characters');
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch('http://localhost:8080/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password
-                }),
-            });
-
-            if (response.ok) {
-                const user = await response.json();
-
-                if (user) {
-                    localStorage.setItem('user', JSON.stringify(user));
-                    navigate('/');
-                } else {
-                    setError('Signup failed. Please try again.');
-                }
-            } else if (response.status === 409) {
-                setError('Username already exists');
-            } else {
-                setError('Signup failed. Please try again.');
-            }
+            const authResponse = await api.signup(formData.username, formData.password);
+            login(authResponse);
+            navigate('/');
         } catch (err) {
-            setError('Network error. Please check your connection.');
-            console.error(err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unexpected error occurred');
+            }
         } finally {
             setLoading(false);
         }
@@ -79,7 +69,6 @@ const Signup = () => {
 
             <div className="w-full max-w-md">
                 <div className="bg-light dark:bg-dark-card rounded-2xl shadow-2xl p-8 space-y-6">
-                    {/* Logo and Title */}
                     <div className="text-center space-y-2">
                         <div className="flex justify-center">
                             <div className="bg-accent-orange p-3 rounded-full">
@@ -94,7 +83,6 @@ const Signup = () => {
                         </p>
                     </div>
 
-                    {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label
@@ -194,7 +182,6 @@ const Signup = () => {
                         </button>
                     </form>
 
-                    {/* Login link */}
                     <p className="text-center text-primary-dark/70 dark:text-dark-text/70">
                         Already have an account?{' '}
                         <Link
