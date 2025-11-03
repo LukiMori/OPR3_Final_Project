@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
+import Header from './components/Header';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated, loading } = useAuth();
@@ -19,21 +20,34 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
+const Layout = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+
+    return (
+        <>
+            {isAuthenticated && <Header />}
+            {children}
+        </>
+    );
+};
+
 const AppRoutes = () => {
     return (
-        <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-                path="/"
-                element={
-                    <ProtectedRoute>
-                        <Home />
-                    </ProtectedRoute>
-                }
-            />
-            <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        <Layout>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                    path="/"
+                    element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+        </Layout>
     );
 };
 
