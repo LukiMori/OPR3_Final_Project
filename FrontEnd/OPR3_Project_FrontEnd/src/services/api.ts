@@ -1,13 +1,12 @@
-import type {AuthResponse} from '../types/user';
+import type {AuthResponse, UserProfile} from '../types/user';
+import type { TmdbMovie, TmdbPerson, TmdbSearchResults } from '../types/tmdb';
 
 const API_BASE_URL = 'http://localhost:8080';
 
-// Helper function to get token from localStorage
 const getToken = (): string | null => {
     return localStorage.getItem('token');
 };
 
-// Helper function to get headers with auth token
 const getAuthHeaders = (): HeadersInit => {
     const token = getToken();
     return {
@@ -77,9 +76,8 @@ export const api = {
         return response.json();
     },
 
-    // Example of a protected endpoint
-    getProtectedData: async () => {
-        const response = await fetch(`${API_BASE_URL}/some-protected-endpoint`, {
+    getUserProfile: async (): Promise<UserProfile> => {
+        const response = await fetch(`${API_BASE_URL}/profile`, {
             method: 'GET',
             headers: getAuthHeaders(),
         });
@@ -88,9 +86,66 @@ export const api = {
             if (response.status === 401) {
                 throw new Error('Unauthorized');
             }
-            throw new Error('Request failed');
+            throw new Error('Failed to fetch profile');
         }
 
         return response.json();
+    },
+
+    updateUsername: async (newUsername: string): Promise<AuthResponse> => {
+        const response = await fetch(`${API_BASE_URL}/profile/username`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ newUsername }),
+        });
+
+        if (!response.ok) {
+            if (response.status === 409) {
+                throw new Error('Username already exists');
+            }
+            if (response.status === 401) {
+                throw new Error('Unauthorized');
+            }
+            throw new Error('Failed to update username');
+        }
+
+        return response.json();
+    },
+
+    searchMovies: async (query: string, page: number = 1): Promise<TmdbSearchResults<TmdbMovie>> => {
+        const response = await fetch(
+            `${API_BASE_URL}/api/search/movies?query=${encodeURIComponent(query)}&page=${page}`,
+            {
+                method: 'GET',
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to search movies');
+        }
+
+        return response.json();
+    },
+
+    searchPeople: async (query: string, page: number = 1): Promise<TmdbSearchResults<TmdbPerson>> => {
+        const response = await fetch(
+            `${API_BASE_URL}/api/search/people?query=${encodeURIComponent(query)}&page=${page}`,
+            {
+                method: 'GET',
+                headers: getAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to search people');
+        }
+
+        return response.json();
+    },
+
+    getTmdbImageUrl: (path: string | null, size: 'w92' | 'w185' | 'w500' | 'original' = 'w185'): string | null => {
+        if (!path) return null;
+        return `https://image.tmdb.org/t/p/${size}${path}`;
     },
 };

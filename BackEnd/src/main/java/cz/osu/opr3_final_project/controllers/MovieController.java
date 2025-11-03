@@ -20,7 +20,7 @@ public class MovieController {
     }
 
     @GetMapping("/movies/{ID}")
-    public Movie getMovieById(@PathVariable String ID) {
+    public Movie getMovieById(@PathVariable Long ID) {
         return movieRepository.findById(ID).orElse(null);
     }
 
