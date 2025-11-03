@@ -1,9 +1,6 @@
 package cz.osu.opr3_final_project.controllers;
 
-import cz.osu.opr3_final_project.dtos.AuthResponseDTO;
-import cz.osu.opr3_final_project.dtos.MovieRequestDTO;
-import cz.osu.opr3_final_project.dtos.LoginRequestDTO;
-import cz.osu.opr3_final_project.dtos.SignupRequestDTO;
+import cz.osu.opr3_final_project.dtos.*;
 import cz.osu.opr3_final_project.model.entities.User;
 import cz.osu.opr3_final_project.repositories.UserRepository;
 import cz.osu.opr3_final_project.services.UserService;
@@ -27,23 +24,18 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> addUser(@RequestBody SignupRequestDTO signupRequest) {
-        // Check if username already exists
         if (userRepository.findByUsername(signupRequest.username()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Username already exists");
         }
 
-        // Create new user
         User user = new User();
         user.setUsername(signupRequest.username());
         user.setPassword(userService.hashPassword(signupRequest.password()));
 
         User savedUser = userRepository.save(user);
-
-        // Generate JWT token
         String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getId());
 
-        // Return user with token
         AuthResponseDTO response = new AuthResponseDTO(
                 savedUser.getId(),
                 savedUser.getUsername(),
@@ -58,10 +50,8 @@ public class UserController {
         User user = userRepository.findByUsername(loginRequestDTO.username()).orElse(null);
 
         if (user != null && userService.verifyPassword(loginRequestDTO.password(), user.getPassword())) {
-            // Generate JWT token
             String token = jwtUtil.generateToken(user.getUsername(), user.getId());
 
-            // Return user with token
             AuthResponseDTO response = new AuthResponseDTO(
                     user.getId(),
                     user.getUsername(),
@@ -96,6 +86,56 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                Long userId = jwtUtil.extractUserId(token);
+
+                UserProfileDTO profile = userService.getUserProfile(userId);
+                return ResponseEntity.ok(profile);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
+    @PutMapping("/profile/username")
+    public ResponseEntity<?> updateUsername(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody UpdateUsernameDTO updateUsernameDTO) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                Long userId = jwtUtil.extractUserId(token);
+
+                if (userRepository.findByUsername(updateUsernameDTO.newUsername()).isPresent()) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body("Username already exists");
+                }
+
+                User user = userRepository.findById(userId).orElseThrow();
+                user.setUsername(updateUsernameDTO.newUsername());
+                userRepository.save(user);
+
+                String newToken = jwtUtil.generateToken(user.getUsername(), user.getId());
+
+                AuthResponseDTO response = new AuthResponseDTO(
+                        user.getId(),
+                        user.getUsername(),
+                        newToken
+                );
+
+                return ResponseEntity.ok(response);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update username");
         }
     }
 }
