@@ -1,24 +1,18 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Film, LogIn } from 'lucide-react';
+import {useState} from 'react';
+import {useNavigate, Link} from 'react-router-dom';
+import {Film, LogIn} from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import {useAuth} from '../context/AuthContext';
+import {api} from '../services/api';
+import type {LoginRequest} from "../types/user.ts";
 
-interface LoginForm {
-    username: string;
-    password: string;
-}
 
 const Login = () => {
-    const [formData, setFormData] = useState<LoginForm>({
-        username: '',
-        password: ''
-    });
+    const [formData, setFormData] = useState<LoginRequest>({username: '', password: ''});
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const {login} = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,7 +20,7 @@ const Login = () => {
         setError('');
 
         try {
-            const authResponse = await api.login(formData.username, formData.password);
+            const authResponse = await api.login(formData);
             login(authResponse);
             navigate('/');
         } catch (err) {
@@ -44,7 +38,7 @@ const Login = () => {
         <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-accent-orange
                     dark:from-dark-bg dark:via-dark-bg dark:to-primary-dark flex items-center justify-center p-4">
             <div className="absolute top-4 right-4">
-                <DarkModeToggle />
+                <DarkModeToggle/>
             </div>
 
             <div className="w-full max-w-md">
@@ -52,7 +46,7 @@ const Login = () => {
                     <div className="text-center space-y-2">
                         <div className="flex justify-center">
                             <div className="bg-accent-orange p-3 rounded-full">
-                                <Film size={40} className="text-light" />
+                                <Film size={40} className="text-light"/>
                             </div>
                         </div>
                         <h1 className="text-3xl font-bold text-primary-dark dark:text-dark-text">
@@ -75,7 +69,7 @@ const Login = () => {
                                 type="text"
                                 id="username"
                                 value={formData.username}
-                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                onChange={(e) => setFormData({...formData, username: e.target.value})}
                                 required
                                 autoComplete="username"
                                 className="w-full px-4 py-3 rounded-lg border-2 border-secondary-green
@@ -98,7 +92,7 @@ const Login = () => {
                                 type="password"
                                 id="password"
                                 value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                onChange={(e) => setFormData({...formData, password: e.target.value})}
                                 required
                                 autoComplete="current-password"
                                 className="w-full px-4 py-3 rounded-lg border-2 border-secondary-green
@@ -129,7 +123,7 @@ const Login = () => {
                                 <span>Logging in...</span>
                             ) : (
                                 <>
-                                    <LogIn size={20} />
+                                    <LogIn size={20}/>
                                     <span>Login</span>
                                 </>
                             )}

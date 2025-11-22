@@ -28,7 +28,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Username already exists");
         }
-
+        System.out.println(signupRequest.getClass());
         User user = new User();
         user.setUsername(signupRequest.username());
         user.setPassword(userService.hashPassword(signupRequest.password()));

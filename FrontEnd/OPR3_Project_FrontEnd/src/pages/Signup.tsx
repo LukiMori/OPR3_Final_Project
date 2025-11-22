@@ -1,52 +1,46 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Film, UserPlus } from 'lucide-react';
+import {useState} from 'react';
+import {useNavigate, Link} from 'react-router-dom';
+import {Film, UserPlus} from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
-
-interface SignupForm {
-    username: string;
-    password: string;
-    confirmPassword: string;
-}
+import {useAuth} from '../context/AuthContext';
+import {api} from '../services/api';
+import type {SignupRequest} from "../types/user.ts";
 
 const Signup = () => {
-    const [formData, setFormData] = useState<SignupForm>({
-        username: '',
-        password: '',
-        confirmPassword: ''
-    });
+    const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const {login} = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        if (formData.password !== formData.confirmPassword) {
+        if (password !== confirmPassword) {
             setError('Passwords do not match');
             setLoading(false);
             return;
         }
 
-        if (formData.password.length < 6) {
+        if (password.length < 6) {
             setError('Password must be at least 6 characters');
             setLoading(false);
             return;
         }
 
-        if (formData.username.length < 3) {
+        if (username.length < 3) {
             setError('Username must be at least 3 characters');
             setLoading(false);
             return;
         }
 
         try {
-            const authResponse = await api.signup(formData.username, formData.password);
+            const signupRequest: SignupRequest = {username: username, password: password};
+            const authResponse = await api.signup(signupRequest);
             login(authResponse);
             navigate('/');
         } catch (err) {
@@ -64,7 +58,7 @@ const Signup = () => {
         <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-accent-orange
                     dark:from-dark-bg dark:via-dark-bg dark:to-primary-dark flex items-center justify-center p-4">
             <div className="absolute top-4 right-4">
-                <DarkModeToggle />
+                <DarkModeToggle/>
             </div>
 
             <div className="w-full max-w-md">
@@ -72,7 +66,7 @@ const Signup = () => {
                     <div className="text-center space-y-2">
                         <div className="flex justify-center">
                             <div className="bg-accent-orange p-3 rounded-full">
-                                <Film size={40} className="text-light" />
+                                <Film size={40} className="text-light"/>
                             </div>
                         </div>
                         <h1 className="text-3xl font-bold text-primary-dark dark:text-dark-text">
@@ -94,8 +88,8 @@ const Signup = () => {
                             <input
                                 type="text"
                                 id="username"
-                                value={formData.username}
-                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 required
                                 autoComplete="username"
                                 minLength={3}
@@ -118,8 +112,8 @@ const Signup = () => {
                             <input
                                 type="password"
                                 id="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
                                 autoComplete="new-password"
                                 minLength={6}
@@ -142,8 +136,8 @@ const Signup = () => {
                             <input
                                 type="password"
                                 id="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 autoComplete="new-password"
                                 minLength={6}
@@ -175,7 +169,7 @@ const Signup = () => {
                                 <span>Creating account...</span>
                             ) : (
                                 <>
-                                    <UserPlus size={20} />
+                                    <UserPlus size={20}/>
                                     <span>Sign Up</span>
                                 </>
                             )}

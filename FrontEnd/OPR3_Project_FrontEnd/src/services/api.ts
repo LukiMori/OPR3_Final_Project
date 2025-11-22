@@ -1,5 +1,5 @@
-import type {AuthResponse, UserProfile} from '../types/user';
-import type { TmdbMovie, TmdbPerson, TmdbSearchResults } from '../types/tmdb';
+import type {AuthResponse, LoginRequest, SignupRequest, UserProfile} from '../types/user';
+import type {TmdbMovie, TmdbPerson, TmdbSearchResults} from '../types/tmdb';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -11,18 +11,18 @@ const getAuthHeaders = (): HeadersInit => {
     const token = getToken();
     return {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(token && {Authorization: `Bearer ${token}`}),
     };
 };
 
 export const api = {
-    signup: async (username: string, password: string): Promise<AuthResponse> => {
+    signup: async (signupRequest: SignupRequest): Promise<AuthResponse> => {
         const response = await fetch(`${API_BASE_URL}/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify(signupRequest),
         });
 
         if (!response.ok) {
@@ -36,13 +36,13 @@ export const api = {
         return response.json();
     },
 
-    login: async (username: string, password: string): Promise<AuthResponse> => {
+    login: async (loginRequest: LoginRequest): Promise<AuthResponse> => {
         const response = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify(loginRequest),
         });
 
         if (!response.ok) {
@@ -96,7 +96,7 @@ export const api = {
         const response = await fetch(`${API_BASE_URL}/profile/username`, {
             method: 'PUT',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ newUsername }),
+            body: JSON.stringify({newUsername}),
         });
 
         if (!response.ok) {
