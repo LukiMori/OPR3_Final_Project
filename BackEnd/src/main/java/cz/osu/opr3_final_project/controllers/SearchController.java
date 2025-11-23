@@ -19,19 +19,17 @@ public class SearchController {
 
     @GetMapping("/movies")
     public ResponseEntity<TmdbSearchResultsDTO<TmdbMovieSearchDTO>> searchMovies(
-            @RequestParam(required = false, defaultValue = "") String query,
-            @RequestParam(required = false, defaultValue = "1") int page) {
+            @RequestParam(required = false, defaultValue = "") String query) {
 
-        TmdbSearchResultsDTO<TmdbMovieSearchDTO> results = tmdbService.searchMovies(query, page);
+        TmdbSearchResultsDTO<TmdbMovieSearchDTO> results = tmdbService.searchMovies(query);
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/people")
     public ResponseEntity<TmdbSearchResultsDTO<TmdbPersonSearchDTO>> searchPeople(
-            @RequestParam(required = false, defaultValue = "") String query,
-            @RequestParam(required = false, defaultValue = "1") int page) {
+            @RequestParam(required = false, defaultValue = "") String query) {
 
-        TmdbSearchResultsDTO<TmdbPersonSearchDTO> results = tmdbService.searchPeople(query, page);
+        TmdbSearchResultsDTO<TmdbPersonSearchDTO> results = tmdbService.searchPeople(query);
         return ResponseEntity.ok(results);
     }
 }

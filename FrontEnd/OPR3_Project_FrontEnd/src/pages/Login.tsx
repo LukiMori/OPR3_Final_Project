@@ -4,7 +4,7 @@ import {Film, LogIn} from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
 import {useAuth} from '../context/AuthContext';
 import {api} from '../services/api';
-import type {LoginRequest} from "../types/user.ts";
+import type {LoginRequest} from "../types/types.ts";
 
 
 const Login = () => {

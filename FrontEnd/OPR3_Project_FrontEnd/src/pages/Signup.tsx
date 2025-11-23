@@ -4,7 +4,7 @@ import {Film, UserPlus} from 'lucide-react';
 import DarkModeToggle from '../components/DarkModeToggle';
 import {useAuth} from '../context/AuthContext';
 import {api} from '../services/api';
-import type {SignupRequest} from "../types/user.ts";
+import type {SignupRequest} from "../types/types.ts";
 
 const Signup = () => {
     const [username, setUsername] = useState<string>('');

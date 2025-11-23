@@ -13,6 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "comments")
 public class Comment {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)

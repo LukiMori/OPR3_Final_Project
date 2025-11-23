@@ -1,5 +1,6 @@
 package cz.osu.opr3_final_project.model.entities;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,26 +14,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "persons")
-public class Person {
+@Table(name = "genres")
+public class Genre {
     @Id
     @Column(unique = true, nullable = false)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    @Column
-    private String birthDate;
 
-    @Column
-    private String biography;
-
-    @ManyToMany(mappedBy = "directors")
-    private List<Movie> directedMovies;
-
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
-    private List<MovieActor> actedMovies;
-
-
+    @ManyToMany(mappedBy = "genres")
+    private List<Movie> genreMovies;
 }

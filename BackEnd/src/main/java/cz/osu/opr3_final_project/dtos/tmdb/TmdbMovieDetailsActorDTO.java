@@ -1,7 +1,8 @@
 package cz.osu.opr3_final_project.dtos.tmdb;
 
-public record TmdbPersonSearchDTO(
+public record TmdbMovieDetailsActorDTO(
         Long id,
         String name,
-        String profilePath
-) {}
+        String character
+) {
+}

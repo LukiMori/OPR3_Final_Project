@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type {User, AuthResponse} from '../types/user';
+import type {Types, AuthResponse} from '../types/types.ts';
 import { api } from '../services/api';
 
 interface AuthContextType {
-    user: User | null;
+    user: Types | null;
     loading: boolean;
     login: (authResponse: AuthResponse) => void;
     logout: () => void;
@@ -13,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<Types | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Verify token on mount

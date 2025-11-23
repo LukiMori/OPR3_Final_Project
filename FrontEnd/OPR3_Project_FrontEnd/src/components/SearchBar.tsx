@@ -1,19 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import {useState, useEffect, useRef, type ReactNode} from 'react';
 import { Search, X } from 'lucide-react';
 import { useDebounce } from '../hooks/useDebounce';
+import type {MovieSummary, PersonSummary} from "../types/types.ts";
 
-interface SearchBarProps {
+interface SearchBarProps<T extends MovieSummary | PersonSummary> {
     placeholder: string;
     onSearch: (query: string) => void;
-    results: any[];
-    renderResult: (result: any) => React.ReactNode;
+    results: T[];
+    renderResult: (result: T, onClick: (result: string) => void) => ReactNode;
+    onResultClick: (result: string) => void;
     loading?: boolean;
 }
 
-const SearchBar = ({ placeholder, onSearch, results, renderResult, loading }: SearchBarProps) => {
+const SearchBar = <T extends MovieSummary | PersonSummary,>({ placeholder, onSearch, results, renderResult, onResultClick, loading }: SearchBarProps<T>) => {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
-    const debouncedQuery = useDebounce(query, 500);
+    const debouncedQuery = useDebounce(query, 400);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -23,7 +25,8 @@ const SearchBar = ({ placeholder, onSearch, results, renderResult, loading }: Se
         } else {
             setIsOpen(false);
         }
-    }, [debouncedQuery, onSearch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedQuery]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -39,6 +42,12 @@ const SearchBar = ({ placeholder, onSearch, results, renderResult, loading }: Se
     const handleClear = () => {
         setQuery('');
         setIsOpen(false);
+    };
+
+    const handleResultClick = (result: string) => {
+        onResultClick(result);
+        setIsOpen(false);
+        setQuery('');
     };
 
     return (
@@ -78,8 +87,8 @@ const SearchBar = ({ placeholder, onSearch, results, renderResult, loading }: Se
                     ) : results.length > 0 ? (
                         <div className="py-2">
                             {results.map((result, index) => (
-                                <div key={index} onClick={() => setIsOpen(false)}>
-                                    {renderResult(result)}
+                                <div key={index}>
+                                    {renderResult(result, handleResultClick)}
                                 </div>
                             ))}
                         </div>
