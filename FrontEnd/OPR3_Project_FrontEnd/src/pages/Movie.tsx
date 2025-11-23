@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Star, Calendar, Users, Heart, MessageSquare } from "lucide-react";
-import type { TmdbMovie } from "../types/tmdb.ts";
 import { api } from "../services/api.ts";
 import { useParams } from "react-router-dom";
 
 import moviePlaceholderImage from "../assets/placeholder-movie.png";
+import type { TmdbMovie } from "../types/movie.ts";
 
 const Movie = () => {
   const { movieId } = useParams<{ movieId: string }>();

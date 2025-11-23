@@ -1,3 +1,5 @@
+import type { Comment, MovieSummary } from "./movie.ts";
+
 export interface Types {
   id: number;
   username: string;
@@ -17,27 +19,6 @@ export interface LoginRequest {
 export interface SignupRequest {
   username: string;
   password: string;
-}
-
-export interface MovieSummary {
-  id: number;
-  title: string;
-  releaseYear: number;
-  posterPath: string;
-}
-
-export interface PersonSummary {
-  id: number;
-  name: string;
-  profilePath: string;
-}
-
-export interface Comment {
-  id: number;
-  content: string;
-  createdAt: string;
-  movieTitle: string;
-  movieId: number;
 }
 
 export interface UserProfile {

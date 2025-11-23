@@ -5,10 +5,11 @@ import { useAuth } from "../context/AuthContext.tsx";
 import { useNavigate, Link } from "react-router-dom";
 import SearchBar from "./SearchBar.tsx";
 import { api } from "../services/api";
-import type { MovieSummary, PersonSummary } from "../types/types.ts";
 
 import moviePlaceholderImage from "../assets/placeholder-movie.png";
 import personPlaceholderImage from "../assets/placeholder-person.png";
+import type { MovieSummary } from "../types/movie.ts";
+import type { PersonSummary } from "../types/person.ts";
 
 const Header = () => {
   const { user, logout } = useAuth();
