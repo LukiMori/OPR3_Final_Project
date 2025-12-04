@@ -190,4 +190,40 @@ public class TmdbService {
             return null;
         }
     }
+
+    public TmdbPersonDetailsDTO getPersonDetails(Long personId) {
+        if (personId == null) {
+            return null;
+        }
+
+        String personUrl = UriComponentsBuilder.fromHttpUrl(baseUrl + "/person/" + personId)
+                .queryParam("api_key", apiKey)
+                .queryParam("language", "en-US")
+                .toUriString();
+
+
+        try {
+            String personResponse = restTemplate.getForObject(personUrl, String.class);
+            JsonNode personRoot = objectMapper.readTree(personResponse);
+
+            if (personRoot != null) {
+
+                return new TmdbPersonDetailsDTO(
+                        personRoot.get("id").asLong(),
+                        personRoot.has("name") ? personRoot.get("name").asText() : "",
+                        personRoot.has("biography") ? personRoot.get("biography").asText() : "",
+                        personRoot.has("birthday") && !personRoot.get("birthday").isNull()
+                                ? personRoot.get("birthday").asText() : null
+                );
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
 }

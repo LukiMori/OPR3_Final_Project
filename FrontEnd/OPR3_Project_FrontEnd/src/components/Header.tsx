@@ -61,30 +61,33 @@ const Header = () => {
   const renderMovieResult = (
     movie: MovieSummary,
     onClick: (id: string) => void,
-  ) => (
-    <div
-      onClick={() => onClick(movie.id.toString())}
-      className="flex gap-3 p-3 hover:bg-light dark:hover:bg-dark-bg transition-colors cursor-pointer"
-    >
-      <img
-        src={
-          api.getTmdbImageUrl(movie.posterPath, "w92") || moviePlaceholderImage
-        }
-        alt={movie.title}
-        className="w-12 h-16 object-cover rounded"
-      />
-      <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-primary-dark dark:text-dark-text truncate">
-          {movie.title}
-        </h4>
-        <p className="text-sm text-primary-dark/70 dark:text-dark-text/70">
-          {movie.releaseYear
-            ? new Date(movie.releaseYear).getFullYear()
-            : "N/A"}
-        </p>
+  ) => {
+    return (
+      <div
+        onClick={() => onClick(movie.id.toString())}
+        className="flex gap-3 p-3 hover:bg-light dark:hover:bg-dark-bg transition-colors cursor-pointer"
+      >
+        <img
+          src={
+            api.getTmdbImageUrl(movie.posterPath, "w92") ||
+            moviePlaceholderImage
+          }
+          alt={movie.title}
+          className="w-12 h-16 object-cover rounded"
+        />
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-primary-dark dark:text-dark-text truncate">
+            {movie.title}
+          </h4>
+          <p className="text-sm text-primary-dark/70 dark:text-dark-text/70">
+            {movie.releaseYear
+              ? new Date(movie.releaseYear).getFullYear()
+              : "N/A"}
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPersonResult = (
     person: PersonSummary,

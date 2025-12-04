@@ -14,6 +14,6 @@ public record TmdbMovieDetailsDTO (
         Long voteTotal,
         Integer voteCount,
         Double rating,
-        String posterPath
+        String posterUrl
 ) {
 }

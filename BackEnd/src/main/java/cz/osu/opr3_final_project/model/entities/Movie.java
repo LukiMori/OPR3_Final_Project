@@ -28,24 +28,24 @@ public class Movie {
     @Column
     private String description;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "movies_genres",
+            name = "movies_genre",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    private List<Genre> genres;
+    private List<Genre> genres = new java.util.ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "movies_directors",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id")
     )
-    private List<Person> directors;
+    private List<Person> directors = new java.util.ArrayList<>();
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-    private List<MovieActor> movieActors;
+    private List<MovieActor> movieActors = new java.util.ArrayList<>();
 
     @Column(nullable = false)
     private Long voteTotal = 0L;

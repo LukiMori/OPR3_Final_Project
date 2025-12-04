@@ -1,12 +1,12 @@
 import type {
   AuthResponse,
   LoginRequest,
-  MovieSummary,
-  PersonSummary,
   SignupRequest,
   UserProfile,
 } from "../types/types.ts";
-import type { TmdbMovie, TmdbSearchResults } from "../types/tmdb";
+import type { TmdbSearchResults } from "../types/tmdb";
+import type { MovieSummary, TmdbMovie } from "../types/movie.ts";
+import type { PersonSummary } from "../types/person.ts";
 
 const API_BASE_URL = "http://localhost:8080";
 
@@ -172,7 +172,41 @@ export const api = {
     if (!response.ok) {
       throw new Error("Failed to fetch movie details");
     }
+    return response.json();
+  },
 
+  isMovieLikedByUser: async (
+    movieId: number,
+    userId: number,
+  ): Promise<boolean> => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/movie/${movieId}/isLiked?userId=${userId}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to check if movie is liked");
+    }
+    return response.json();
+  },
+
+  changeMovieLikedByUserId: async (
+    movieId: number,
+    userId: number,
+    newMovieLikedStatus: boolean,
+  ): Promise<void> => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/movie/${movieId}/changeLikedStatus?userId=${userId}&currentMovieLikedStatus=${newMovieLikedStatus}`,
+      {
+        method: "PUT",
+        headers: getAuthHeaders(),
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to change likedStatus");
+    }
     return response.json();
   },
 };

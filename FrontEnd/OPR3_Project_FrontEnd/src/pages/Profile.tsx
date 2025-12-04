@@ -26,7 +26,7 @@ const Profile = () => {
   const [updatingUsername, setUpdatingUsername] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, []);
 
   const fetchProfile = async () => {

@@ -1,7 +1,7 @@
 CREATE TABLE genre
 (
-    id   BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    id   BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE movies_genre

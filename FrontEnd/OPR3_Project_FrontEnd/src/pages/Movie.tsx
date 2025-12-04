@@ -5,25 +5,33 @@ import { useParams } from "react-router-dom";
 
 import moviePlaceholderImage from "../assets/placeholder-movie.png";
 import type { TmdbMovie } from "../types/movie.ts";
+import { useAuth } from "../context/AuthContext.tsx";
 
 const Movie = () => {
+  const { user } = useAuth();
   const { movieId } = useParams<{ movieId: string }>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [movie, setMovie] = useState<TmdbMovie | null>(null);
+  const [movieLiked, setMovieLiked] = useState<boolean>(false);
+  const [isWaiting, setIsWaiting] = useState(false);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
-      if (!movieId) {
-        setError("Movie ID is required");
+      if (!movieId || !user) {
+        setError("Movie ID or user not available");
         setLoading(false);
         return;
       }
 
       try {
-        const movieData = await api.getMovieDetails(parseInt(movieId));
-        console.log(movieData);
+        setError("");
+        const [movieData, isLiked] = await Promise.all([
+          api.getMovieDetails(parseInt(movieId)),
+          api.isMovieLikedByUser(parseInt(movieId), user?.id),
+        ]);
         setMovie(movieData);
+        setMovieLiked(isLiked);
       } catch (err) {
         setError("Failed to load movie details.");
         console.log(err);
@@ -32,7 +40,24 @@ const Movie = () => {
       }
     };
     void fetchMovieDetails();
-  }, [movieId]);
+  }, [movieId, user]);
+
+  const handleMovieLike = async () => {
+    setIsWaiting(true);
+    if (!movieId || !user) return;
+
+    try {
+      await api.changeMovieLikedByUserId(
+        parseInt(movieId),
+        user.id,
+        !movieLiked,
+      );
+      setMovieLiked(!movieLiked);
+    } catch (err) {
+      console.error("Failed to update favorite status:", err);
+    }
+    setIsWaiting(false);
+  };
 
   if (loading) {
     return (
@@ -54,8 +79,8 @@ const Movie = () => {
     );
   }
 
-  const posterUrl = movie.posterPath
-    ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
+  const posterUrl = movie.posterUrl
+    ? `https://image.tmdb.org/t/p/w500${movie.posterUrl}`
     : moviePlaceholderImage;
 
   return (
@@ -87,10 +112,17 @@ const Movie = () => {
               <div className="flex gap-2">
                 <button
                   className="p-3 bg-accent-orange hover:bg-accent-orange/90
-                                                 text-light rounded-lg transition-colors"
+             text-light rounded-lg transition-colors"
                   title="Add to favorites"
+                  disabled={isWaiting}
+                  onClick={async () => {
+                    await handleMovieLike();
+                  }}
                 >
-                  <Heart size={25} />
+                  <Heart
+                    size={25}
+                    className={movieLiked ? "fill-current" : ""}
+                  />
                 </button>
               </div>
             </div>

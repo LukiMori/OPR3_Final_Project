@@ -25,14 +25,6 @@ public class Person {
     @Column
     private String birthDate;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String biography;
-
-    @ManyToMany(mappedBy = "directors")
-    private List<Movie> directedMovies;
-
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
-    private List<MovieActor> actedMovies;
-
-
 }

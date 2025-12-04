@@ -9,7 +9,7 @@ export interface TmdbMovie {
   voteTotal: number;
   voteCount: number;
   rating: number;
-  posterPath: string | null;
+  posterUrl: string | null;
 }
 
 export interface TmdbMovieDetailsActors {

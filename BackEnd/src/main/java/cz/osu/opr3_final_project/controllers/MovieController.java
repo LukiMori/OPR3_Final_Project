@@ -3,17 +3,12 @@ package cz.osu.opr3_final_project.controllers;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsActorDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDirectorDTO;
-import cz.osu.opr3_final_project.model.entities.Genre;
-import cz.osu.opr3_final_project.model.entities.Movie;
-import cz.osu.opr3_final_project.model.entities.MovieActor;
-import cz.osu.opr3_final_project.model.entities.Person;
-import cz.osu.opr3_final_project.repositories.GenreRepository;
-import cz.osu.opr3_final_project.repositories.MovieActorRepository;
-import cz.osu.opr3_final_project.repositories.MovieRepository;
+import cz.osu.opr3_final_project.model.entities.*;
+import cz.osu.opr3_final_project.repositories.*;
+import cz.osu.opr3_final_project.services.MovieService;
 import cz.osu.opr3_final_project.services.TmdbService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,14 +17,20 @@ import java.util.stream.Collectors;
 public class MovieController {
     private final MovieRepository movieRepository;
     private final TmdbService tmdbService;
+    private final MovieService movieService;
+    private final UserRepository userRepository;
     private final MovieActorRepository movieActorRepository;
     private final GenreRepository genreRepository;
+    private final PersonRepository personRepository;
 
-    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieActorRepository movieActorRepository, GenreRepository genreRepository) {
+    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, UserRepository userRepository, MovieActorRepository movieActorRepository, GenreRepository genreRepository, PersonRepository personRepository) {
         this.movieRepository = movieRepository;
         this.tmdbService = tmdbService;
+        this.movieService = movieService;
+        this.userRepository = userRepository;
         this.movieActorRepository = movieActorRepository;
         this.genreRepository = genreRepository;
+        this.personRepository = personRepository;
     }
 
     @GetMapping("/{ID}")
@@ -38,7 +39,7 @@ public class MovieController {
         Movie movieToReturn = movieRepository.findById(ID).orElse(null);
 
         if (movieToReturn == null) {
-        movieDTOToReturn = tmdbService.getMovieDetails(ID);
+            movieDTOToReturn = tmdbService.getMovieDetails(ID);
             System.out.println("Movie not found in local database. Fetched from TMDB.");
         } else {
             System.out.println("Movie found in local database.");
@@ -78,5 +79,51 @@ public class MovieController {
         }
 
         return movieDTOToReturn;
+    }
+
+
+    @GetMapping("/{movieId}/isLiked")
+    public boolean isMovieLikedByUser(@PathVariable Long movieId, @RequestParam Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
+        List<Movie> movies = user.getFavouriteMovies();
+        for (Movie movie : movies) {
+            if (movie.getId().equals(movieId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @PutMapping("/{movieId}/changeLikedStatus")
+    public boolean changeMovieLikedStatusByUser(@PathVariable Long movieId, @RequestParam Long userId, @RequestParam boolean currentMovieLikedStatus) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
+
+        Movie movie = movieRepository.findById(movieId).orElse(null);
+
+        if (movie == null) {
+            TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
+            if (movieDetailsDTO == null) {
+                return false;
+            }
+            Movie movieToAdd = movieService.createMovieIfNotExists(movieDetailsDTO);
+            user.getFavouriteMovies().add(movieToAdd);
+            userRepository.save(user);
+        } else {
+            if (currentMovieLikedStatus) {
+                user.getFavouriteMovies().add(movie);
+                userRepository.save(user);
+            } else {
+                user.getFavouriteMovies().remove(movie);
+                userRepository.save(user);
+            }
+        }
+
+        return true;
     }
 }
