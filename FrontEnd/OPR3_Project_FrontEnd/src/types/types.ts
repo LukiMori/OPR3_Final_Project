@@ -27,5 +27,5 @@ export interface UserProfile {
   totalFavorites: number;
   totalComments: number;
   favoriteMovies: MovieSummary[];
-  recentComments: Comment[];
+  Comments: Comment[];
 }

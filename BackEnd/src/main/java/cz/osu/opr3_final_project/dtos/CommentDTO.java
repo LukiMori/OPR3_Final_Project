@@ -1,11 +1,11 @@
 package cz.osu.opr3_final_project.dtos;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CommentDTO(
         Long id,
         String content,
-        LocalDateTime createdAt,
+        Instant timestamp,
         String movieTitle,
         Long movieId
 ) {}

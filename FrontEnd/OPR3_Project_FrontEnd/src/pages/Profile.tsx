@@ -13,12 +13,14 @@ import { useAuth } from "../context/AuthContext";
 import type { UserProfile } from "../types/types.ts";
 
 import moviePlaceholderImage from "../assets/placeholder-movie.png";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
 
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -79,6 +81,21 @@ const Profile = () => {
     setUsernameError("");
   };
 
+  const handleMovieClick = (movie: string) => {
+    navigate(`/movie/${movie}`);
+  };
+
+  const handleDeleteMovieClick = async (movieId: string) => {
+    if (!movieId || !user) return;
+
+    try {
+      await api.changeMovieLikedByUserId(parseInt(movieId), user.id, false);
+      await fetchProfile();
+    } catch (err) {
+      console.error("Failed to delete movie:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-light dark:bg-dark-bg flex items-center justify-center">
@@ -111,7 +128,6 @@ const Profile = () => {
               </div>
 
               <div>
-                {/* Username Section */}
                 <div className="flex items-center gap-3 mb-2">
                   {isEditingUsername ? (
                     <div className="flex items-center gap-2">
@@ -170,7 +186,6 @@ const Profile = () => {
                   </p>
                 )}
 
-                {/* Stats */}
                 <div className="flex gap-6 text-primary-dark/70 dark:text-dark-text/70">
                   <div className="flex items-center gap-2">
                     <Film size={18} />
@@ -199,20 +214,24 @@ const Profile = () => {
                 No favorite movies yet. Start adding some!
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 ">
                 {profile.favoriteMovies.map((movie) => (
                   <div
                     key={movie.id}
-                    className="flex gap-4 p-4 rounded-lg bg-light dark:bg-dark-bg
+                    onClick={() => handleMovieClick(movie.id.toString())}
+                    className="flex items-center gap-4 p-2 rounded-lg bg-light dark:bg-dark-bg
                              hover:shadow-md transition-shadow cursor-pointer"
                   >
                     <img
-                      src={movie.posterPath || moviePlaceholderImage}
+                      src={
+                        api.getTmdbImageUrl(movie.posterUrl, "w92") ||
+                        moviePlaceholderImage
+                      }
                       alt={movie.title}
-                      className="w-16 h-24 object-cover rounded"
+                      className="w-12 h-16 object-cover rounded"
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-primary-dark dark:text-dark-text">
+                    <div className="flex-1 ">
+                      <h3 className="font-semibold text-xl pb-1 text-primary-dark dark:text-dark-text">
                         {movie.title}
                       </h3>
                       <p className="text-sm text-primary-dark/70 dark:text-dark-text/70">
@@ -222,6 +241,10 @@ const Profile = () => {
                     <button
                       className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                       title="Remove from favorites"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMovieClick(movie.id.toString());
+                      }}
                     >
                       <Trash2
                         size={18}
@@ -241,13 +264,13 @@ const Profile = () => {
               Recent Comments
             </h2>
 
-            {profile.recentComments.length === 0 ? (
+            {profile.Comments.length === 0 ? (
               <p className="text-primary-dark/70 dark:text-dark-text/70 text-center py-8">
                 No comments yet. Share your thoughts on movies!
               </p>
             ) : (
               <div className="space-y-4">
-                {profile.recentComments.map((comment) => (
+                {profile.Comments.map((comment) => (
                   <div
                     key={comment.id}
                     className="p-4 rounded-lg bg-light dark:bg-dark-bg

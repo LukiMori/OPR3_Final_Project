@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Integer.parseInt;
+
 @Service
 public class UserService {
 
@@ -34,16 +36,37 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<MovieSummaryDTO> favoriteMovies = new ArrayList<>();
-        List<CommentDTO> recentComments = new ArrayList<>();
+        List <MovieSummaryDTO> favoriteMovies = new ArrayList<>();
+
+        user.getFavouriteMovies().forEach(movie -> {
+            favoriteMovies.add(new MovieSummaryDTO(
+                    movie.getId(),
+                    movie.getTitle(),
+                    movie.getPosterUrl(),
+                    parseInt(movie.getReleaseDate().substring(0, 4)),
+                    movie.getRating()
+            ));
+        });
+
+        List <CommentDTO> comments = new ArrayList<>();
+        user.getComments().forEach(comment -> {
+            comments.add(new CommentDTO(
+                    comment.getId(),
+                    comment.getContent(),
+                    comment.getTimestamp(),
+                    comment.getMovie().getTitle(),
+                    comment.getMovie().getId()
+            ));
+        });
+
 
         return new UserProfileDTO(
                 user.getId(),
                 user.getUsername(),
-                favoriteMovies.size(),
-                recentComments.size(),
+                user.getFavouriteMovies().size(),
+                user.getComments().size(),
                 favoriteMovies,
-                recentComments
+                comments
         );
     }
 }

@@ -27,7 +27,7 @@ export interface MovieSummary {
   id: number;
   title: string;
   releaseYear: number;
-  posterPath: string;
+  posterUrl: string;
 }
 
 export interface Comment {

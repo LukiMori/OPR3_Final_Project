@@ -8,5 +8,5 @@ public record UserProfileDTO(
         int totalFavorites,
         int totalComments,
         List<MovieSummaryDTO> favoriteMovies,
-        List<CommentDTO> recentComments
+        List<CommentDTO> Comments
 ) {}

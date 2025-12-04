@@ -69,7 +69,7 @@ const Header = () => {
       >
         <img
           src={
-            api.getTmdbImageUrl(movie.posterPath, "w92") ||
+            api.getTmdbImageUrl(movie.posterUrl, "w92") ||
             moviePlaceholderImage
           }
           alt={movie.title}
@@ -117,7 +117,6 @@ const Header = () => {
     <header className="bg-primary-dark dark:bg-dark-card shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-col gap-4">
-          {/* Top row - Logo and Types controls */}
           <div className="flex justify-between  items-center">
             <Link
               to="/"
@@ -172,8 +171,6 @@ const Header = () => {
               </button>
             </div>
           </div>
-
-          {/* Bottom row - Search bars */}
         </div>
       </div>
     </header>

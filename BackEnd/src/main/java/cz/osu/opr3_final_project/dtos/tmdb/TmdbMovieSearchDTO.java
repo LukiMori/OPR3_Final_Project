@@ -4,5 +4,6 @@ public record TmdbMovieSearchDTO(
         Long id,
         String title,
         String releaseYear,
-        String posterPath
+        String posterUrl
+
 ) {}
