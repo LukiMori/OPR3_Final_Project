@@ -32,7 +32,4 @@ public class Comment {
 
     @Column
     private Instant timestamp;
-
-    @Column
-    private int score;
 }
