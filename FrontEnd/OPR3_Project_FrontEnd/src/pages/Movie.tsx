@@ -15,6 +15,7 @@ const Movie = () => {
   const [movie, setMovie] = useState<TmdbMovie | null>(null)
   const [movieLiked, setMovieLiked] = useState<boolean>(false)
   const [isWaiting, setIsWaiting] = useState(false)
+  const [newComment, setNewComment] = useState('')
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -51,6 +52,19 @@ const Movie = () => {
       setMovieLiked(!movieLiked)
     } catch (err) {
       console.error('Failed to update favorite status:', err)
+    }
+    setIsWaiting(false)
+  }
+
+  const handleMovieComment = async (commentContent: string) => {
+    if (!commentContent.trim()) return
+    setIsWaiting(true)
+    if (!movieId || !user) return
+    try {
+      await api.addCommentToMovieByUser(parseInt(movieId), user.id, commentContent)
+      setNewComment('')
+    } catch (err) {
+      console.error('Failed to add comment to movie:', err)
     }
     setIsWaiting(false)
   }
@@ -99,9 +113,7 @@ const Movie = () => {
              text-light rounded-lg transition-colors'
                   title='Add to favorites'
                   disabled={isWaiting}
-                  onClick={async () => {
-                    await handleMovieLike()
-                  }}
+                  onClick={handleMovieLike}
                 >
                   <Heart size={25} className={movieLiked ? 'fill-current' : ''} />
                 </button>
@@ -143,6 +155,10 @@ const Movie = () => {
 
           <div className='mb-6'>
             <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              minLength={1}
+              disabled={isWaiting}
               placeholder='Share your thoughts about this movie...'
               className='w-full px-4 py-3 border-2 border-secondary-green rounded-lg
                                      bg-white dark:bg-dark-bg
@@ -150,11 +166,15 @@ const Movie = () => {
                                      placeholder:text-primary-dark/50 dark:placeholder:text-dark-text/50
                                      focus:border-accent-orange focus:outline-none
                                      resize-none'
-              rows={4}
             />
             <button
+              onClick={async () => {
+                await handleMovieComment(newComment)
+              }}
+              disabled={isWaiting || !newComment.trim()}
               className='mt-3 px-6 py-2 bg-accent-orange hover:bg-accent-orange/90
-                                     text-light font-semibold rounded-lg transition-colors'
+              text-light font-semibold rounded-lg transition-colors
+               disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Post Comment
             </button>

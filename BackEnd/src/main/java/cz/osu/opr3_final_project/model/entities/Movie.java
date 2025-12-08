@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -28,13 +29,16 @@ public class Movie {
     @Column
     private String description;
 
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "movies_genre",
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    private List<Genre> genres = new java.util.ArrayList<>();
+    private List<Genre> genres = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -42,10 +46,10 @@ public class Movie {
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "person_id")
     )
-    private List<Person> directors = new java.util.ArrayList<>();
+    private List<Person> directors = new ArrayList<>();
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-    private List<MovieActor> movieActors = new java.util.ArrayList<>();
+    private List<MovieActor> movieActors = new ArrayList<>();
 
     @Column(nullable = false)
     private Long voteTotal = 0L;
