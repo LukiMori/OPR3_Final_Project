@@ -183,7 +183,7 @@ export const api = {
   },
 
   addCommentToMovieByUser: async (movieId: number, userId: number, commentContent: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/api/movie/${movieId}/comments`, {
+    const response = await fetch(`${API_BASE_URL}/api/comment/${movieId}/comments`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -194,6 +194,19 @@ export const api = {
     if (!response.ok) {
       console.log(response)
       throw new Error('Failed to add comment')
+    }
+    return response.json()
+  },
+
+  deleteCommentFromMovie: async (commentId: number, userId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/comment/${commentId}/deleteComment`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userId)
+    })
+    if (!response.ok) {
+      console.log(response)
+      throw new Error('Failed to remove comment')
     }
     return response.json()
   }

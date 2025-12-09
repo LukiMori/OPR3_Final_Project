@@ -23,6 +23,8 @@ const Profile = () => {
 
   const moviesPagination = usePagination(profile?.favoriteMovies || [], 5)
 
+  const commentsPagination = usePagination(profile?.comments || [], 5)
+
   useEffect(() => {
     void fetchProfile()
   }, [])
@@ -65,6 +67,30 @@ const Profile = () => {
       moviesPagination.resetToValidPage(profile!.favoriteMovies.length - 1)
     } catch (err) {
       console.error('Failed to delete movie:', err)
+    }
+  }
+
+  const handleDeleteCommentClick = async (commentId: number) => {
+    if (!commentId || !user) return
+
+    try {
+      await api.deleteCommentFromMovie(commentId, user.id)
+
+      setProfile((prev) => {
+        if (!prev) return prev
+
+        const updatedComments = prev.comments.filter((comment) => comment.id !== commentId)
+
+        return {
+          ...prev,
+          comments: updatedComments,
+          totalComments: updatedComments.length
+        }
+      })
+
+      commentsPagination.resetToValidPage(profile!.comments.length - 1)
+    } catch (err) {
+      console.error('Failed to delete comment:', err)
     }
   }
 
@@ -224,20 +250,78 @@ const Profile = () => {
                     </button>
 
                     {/* Page Numbers */}
-                    {Array.from({ length: moviesPagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+
+                    <button
+                      key={1}
+                      onClick={() => moviesPagination.goToPage(1)}
+                      className={`px-4 py-2 rounded-lg transition-colors
+                                  ${
+                                    moviesPagination.currentPage === 1
+                                      ? 'bg-accent-orange text-light'
+                                      : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+                                  }`}
+                    >
+                      {1}
+                    </button>
+
+                    {moviesPagination.currentPage > 3 ? (
+                      <button
+                        className={`px-4 py-2 rounded-lg transition-colors bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20`}
+                        disabled={true}
+                      >
+                        ...
+                      </button>
+                    ) : null}
+
+                    {(() => {
+                      const current = moviesPagination.currentPage
+                      const total = moviesPagination.totalPages
+
+                      const start = Math.max(2, current - 1)
+                      const end = Math.min(total - 1, current + 1)
+
+                      const pages = []
+                      for (let i = start; i <= end; i++) {
+                        pages.push(i)
+                      }
+
+                      return pages
+                    })().map((pageNumber) => (
                       <button
                         key={pageNumber}
                         onClick={() => moviesPagination.goToPage(pageNumber)}
                         className={`px-4 py-2 rounded-lg transition-colors
-                                  ${
-                                    moviesPagination.currentPage === pageNumber
-                                      ? 'bg-accent-orange text-light'
-                                      : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
-                                  }`}
+              ${
+                moviesPagination.currentPage === pageNumber
+                  ? 'bg-accent-orange text-light'
+                  : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+              }`}
                       >
                         {pageNumber}
                       </button>
                     ))}
+
+                    {moviesPagination.currentPage < moviesPagination.totalPages - 2 ? (
+                      <button
+                        className={`px-4 py-2 rounded-lg transition-colors bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20`}
+                        disabled={true}
+                      >
+                        ...
+                      </button>
+                    ) : null}
+
+                    <button
+                      key={moviesPagination.totalPages}
+                      onClick={() => moviesPagination.goToPage(moviesPagination.totalPages)}
+                      className={`px-4 py-2 rounded-lg transition-colors
+                                  ${
+                                    moviesPagination.currentPage === moviesPagination.totalPages
+                                      ? 'bg-accent-orange text-light'
+                                      : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+                                  }`}
+                    >
+                      {moviesPagination.totalPages}
+                    </button>
 
                     {/* Next Button */}
                     <button
@@ -261,37 +345,148 @@ const Profile = () => {
               <MessageSquare size={24} className='text-accent-orange' />
               Recent Comments
             </h2>
-
-            {profile.Comments.length === 0 ? (
+            {profile.comments.length === 0 ? (
               <p className='text-primary-dark/70 dark:text-dark-text/70 text-center py-8'>
                 No comments yet. Share your thoughts on movies!
               </p>
             ) : (
-              <div className='space-y-4'>
-                {profile.Comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className='p-4 rounded-lg bg-light dark:bg-dark-bg
+              <>
+                <div className='space-y-4'>
+                  {commentsPagination.currentItems.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className='p-4 rounded-lg bg-light dark:bg-dark-bg
                              hover:shadow-md transition-shadow'
-                  >
-                    <div className='flex justify-between items-start mb-2'>
-                      <h3 className='font-semibold text-primary-dark dark:text-dark-text'>{comment.movieTitle}</h3>
-                      <span className='text-xs text-primary-dark/70 dark:text-dark-text/70'>
-                        {new Date(comment.createdAt).toLocaleDateString()}
-                      </span>
+                    >
+                      <div className='flex justify-between items-start mb-2'>
+                        <h3 className='font-semibold text-primary-dark dark:text-dark-text'>{comment.movieTitle}</h3>
+                        <span className='text-xs text-primary-dark/70 dark:text-dark-text/70'>
+                          {new Date(comment.timestamp).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: false
+                          })}
+                        </span>
+                      </div>
+                      <p className='text-primary-dark/80 dark:text-dark-text/80'>{comment.content}</p>
+                      <div className='flex gap-2 mt-3'>
+                        {/*<button className='text-sm text-accent-orange hover:text-accent-orange/80 transition-colors'>*/}
+                        {/*  Edit*/}
+                        {/*</button>*/}
+                        <button
+                          className='text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors'
+                          onClick={() => handleDeleteCommentClick(comment.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <p className='text-primary-dark/80 dark:text-dark-text/80'>{comment.content}</p>
-                    <div className='flex gap-2 mt-3'>
-                      <button className='text-sm text-accent-orange hover:text-accent-orange/80 transition-colors'>
-                        Edit
+                  ))}
+                </div>
+
+                {commentsPagination.totalPages > 1 && (
+                  <div className='flex items-center justify-center gap-2 mt-6'>
+                    {/* Previous Button */}
+                    <button
+                      onClick={commentsPagination.goToPreviousPage}
+                      disabled={commentsPagination.currentPage === 1}
+                      className='px-3 py-2 rounded-lg bg-light dark:bg-dark-bg
+                               hover:bg-secondary-green/20 dark:hover:bg-secondary-green/20
+                               transition-colors disabled:opacity-30 disabled:cursor-not-allowed'
+                    >
+                      <span className='text-primary-dark dark:text-dark-text'>←</span>
+                    </button>
+
+                    {/* Page Numbers */}
+
+                    <button
+                      key={1}
+                      onClick={() => commentsPagination.goToPage(1)}
+                      className={`px-4 py-2 rounded-lg transition-colors
+                                  ${
+                                    commentsPagination.currentPage === 1
+                                      ? 'bg-accent-orange text-light'
+                                      : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+                                  }`}
+                    >
+                      {1}
+                    </button>
+
+                    {commentsPagination.currentPage > 3 ? (
+                      <button
+                        className={`px-4 py-2 rounded-lg transition-colors bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20`}
+                        disabled={true}
+                      >
+                        ...
                       </button>
-                      <button className='text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors'>
-                        Delete
+                    ) : null}
+
+                    {(() => {
+                      const current = commentsPagination.currentPage
+                      const total = commentsPagination.totalPages
+
+                      const start = Math.max(2, current - 1)
+                      const end = Math.min(total - 1, current + 1)
+
+                      const pages = []
+                      for (let i = start; i <= end; i++) {
+                        pages.push(i)
+                      }
+
+                      return pages
+                    })().map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => commentsPagination.goToPage(pageNumber)}
+                        className={`px-4 py-2 rounded-lg transition-colors
+              ${
+                commentsPagination.currentPage === pageNumber
+                  ? 'bg-accent-orange text-light'
+                  : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+              }`}
+                      >
+                        {pageNumber}
                       </button>
-                    </div>
+                    ))}
+
+                    {commentsPagination.currentPage < commentsPagination.totalPages - 2 ? (
+                      <button
+                        className={`px-4 py-2 rounded-lg transition-colors bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20`}
+                        disabled={true}
+                      >
+                        ...
+                      </button>
+                    ) : null}
+
+                    <button
+                      key={commentsPagination.totalPages}
+                      onClick={() => commentsPagination.goToPage(commentsPagination.totalPages)}
+                      className={`px-4 py-2 rounded-lg transition-colors
+                                  ${
+                                    commentsPagination.currentPage === commentsPagination.totalPages
+                                      ? 'bg-accent-orange text-light'
+                                      : 'bg-light dark:bg-dark-bg text-primary-dark dark:text-dark-text hover:bg-secondary-green/20'
+                                  }`}
+                    >
+                      {commentsPagination.totalPages}
+                    </button>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={commentsPagination.goToNextPage}
+                      disabled={commentsPagination.currentPage === commentsPagination.totalPages}
+                      className='px-3 py-2 rounded-lg bg-light dark:bg-dark-bg
+                               hover:bg-secondary-green/20 dark:hover:bg-secondary-green/20
+                               transition-colors disabled:opacity-30 disabled:cursor-not-allowed'
+                    >
+                      <span className='text-primary-dark dark:text-dark-text'>→</span>
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>

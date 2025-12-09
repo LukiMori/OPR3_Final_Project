@@ -49,11 +49,12 @@ public class UserService {
         });
 
         List <CommentDTO> comments = new ArrayList<>();
+
         user.getComments().forEach(comment -> {
             comments.add(new CommentDTO(
                     comment.getId(),
                     comment.getContent(),
-                    comment.getTimestamp(),
+                    comment.getTimestamp().toString(),
                     comment.getMovie().getTitle(),
                     comment.getMovie().getId()
             ));
@@ -63,8 +64,8 @@ public class UserService {
         return new UserProfileDTO(
                 user.getId(),
                 user.getUsername(),
-                user.getFavouriteMovies().size(),
-                user.getComments().size(),
+                favoriteMovies.size(),
+                comments.size(),
                 favoriteMovies,
                 comments
         );

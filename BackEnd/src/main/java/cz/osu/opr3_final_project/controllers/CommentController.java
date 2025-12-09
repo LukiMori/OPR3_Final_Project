@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 
 @RestController
-@RequestMapping("/api/movie")
+@RequestMapping("/api/comment")
 public class CommentController {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
@@ -42,7 +42,7 @@ public class CommentController {
         Comment newComment = new Comment();
         newComment.setContent(newCommentRequestDTO.content());
         newComment.setUser(user);
-        newComment.setTimestamp( Instant.now());
+        newComment.setTimestamp(Instant.now());
 
         if (movie == null) {
             TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
@@ -72,4 +72,18 @@ public class CommentController {
         return true;
     }
 
+    @DeleteMapping("/{commentId}/deleteComment")
+    public boolean deleteComment(@PathVariable Long commentId, @RequestBody Long userId) {
+        Comment comment = commentRepository.findById(commentId).orElse(null);
+        if (comment == null) {
+            return false;
+        }
+
+        if (!comment.getUser().getId().equals(userId)) {
+            return false;
+        }
+
+        commentRepository.delete(comment);
+        return true;
+    }
 }
