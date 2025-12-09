@@ -1,5 +1,6 @@
 package cz.osu.opr3_final_project.controllers;
 
+import cz.osu.opr3_final_project.dtos.CommentDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsActorDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDirectorDTO;
@@ -63,6 +64,8 @@ public class MovieController {
 
             List<String> genres = movieToReturn.getGenres().stream().map(Genre::getName).collect(Collectors.toList());
 
+            List<CommentDTO> comments = movieToReturn.getComments().stream().map(comment -> new CommentDTO(comment.getId(), comment.getUser().getUsername(), comment.getContent(), comment.getTimestamp().toString(), comment.getMovie().getTitle(), comment.getMovie().getId())).toList();
+
             movieDTOToReturn = new TmdbMovieDetailsDTO(
                     movieToReturn.getId(),
                     movieToReturn.getTitle(),
@@ -71,6 +74,7 @@ public class MovieController {
                     directorDTOs,
                     actorDTOs,
                     genres,
+                    comments,
                     movieToReturn.getVoteTotal(),
                     movieToReturn.getVoteCount(),
                     movieToReturn.getRating(),

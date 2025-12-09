@@ -1,6 +1,6 @@
 import type { AuthResponse, LoginRequest, SignupRequest, UserProfile } from '../types/types.ts'
 import type { TmdbSearchResults } from '../types/tmdb'
-import type { MovieSummary, TmdbMovie } from '../types/movie.ts'
+import type { MovieSummary, TmdbMovie, Comment } from '../types/movie.ts'
 import type { PersonSummary } from '../types/person.ts'
 
 const API_BASE_URL = 'http://localhost:8080'
@@ -182,7 +182,7 @@ export const api = {
     return response.json()
   },
 
-  addCommentToMovieByUser: async (movieId: number, userId: number, commentContent: string): Promise<void> => {
+  addCommentToMovieByUser: async (movieId: number, userId: number, commentContent: string): Promise<Comment> => {
     const response = await fetch(`${API_BASE_URL}/api/comment/${movieId}/comments`, {
       method: 'PUT',
       headers: getAuthHeaders(),

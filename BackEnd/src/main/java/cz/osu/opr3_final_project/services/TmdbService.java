@@ -3,6 +3,7 @@ package cz.osu.opr3_final_project.services;
 import cz.osu.opr3_final_project.dtos.tmdb.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.osu.opr3_final_project.model.entities.Comment;
 import cz.osu.opr3_final_project.model.entities.Genre;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -174,6 +175,7 @@ public class TmdbService {
                         directors,
                         actors,
                         genres,
+                        null,
                         0L,
                         0,
                         0.0,

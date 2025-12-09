@@ -1,6 +1,8 @@
 package cz.osu.opr3_final_project.dtos.tmdb;
 
 
+import cz.osu.opr3_final_project.dtos.CommentDTO;
+
 import java.util.List;
 
 public record TmdbMovieDetailsDTO (
@@ -11,6 +13,7 @@ public record TmdbMovieDetailsDTO (
         List<TmdbMovieDetailsDirectorDTO> directors,
         List<TmdbMovieDetailsActorDTO> actors,
         List<String> genre,
+        List<CommentDTO> comments,
         Long voteTotal,
         Integer voteCount,
         Double rating,

@@ -1,5 +1,6 @@
 package cz.osu.opr3_final_project.controllers;
 
+import cz.osu.opr3_final_project.dtos.CommentDTO;
 import cz.osu.opr3_final_project.dtos.NewCommentRequestDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDTO;
 import cz.osu.opr3_final_project.model.entities.Comment;
@@ -32,10 +33,10 @@ public class CommentController {
     }
 
     @PutMapping("/{movieId}/comments")
-    public boolean addNewComment(@PathVariable Long movieId, @RequestBody NewCommentRequestDTO newCommentRequestDTO) {
+    public CommentDTO addNewComment(@PathVariable Long movieId, @RequestBody NewCommentRequestDTO newCommentRequestDTO) {
         User user = userRepository.findById(newCommentRequestDTO.userId()).orElse(null);
         if (user == null) {
-            return false;
+            return null;
         }
         Movie movie = movieRepository.findById(movieId).orElse(null);
 
@@ -47,7 +48,7 @@ public class CommentController {
         if (movie == null) {
             TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
             if (movieDetailsDTO == null) {
-                return false;
+                return null;
             }
             Movie movieToAdd = movieService.createMovieIfNotExists(movieDetailsDTO);
 
@@ -69,7 +70,14 @@ public class CommentController {
         user.getComments().add(newComment);
         userRepository.save(user);
 
-        return true;
+        return new CommentDTO(
+                newComment.getId(),
+                newComment.getUser().getUsername(),
+                newComment.getContent(),
+                newComment.getTimestamp().toString(),
+                newComment.getMovie().getTitle(),
+                newComment.getMovie().getId()
+        );
     }
 
     @DeleteMapping("/{commentId}/deleteComment")

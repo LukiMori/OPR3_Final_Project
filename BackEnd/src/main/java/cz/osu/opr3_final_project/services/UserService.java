@@ -53,6 +53,7 @@ public class UserService {
         user.getComments().forEach(comment -> {
             comments.add(new CommentDTO(
                     comment.getId(),
+                    comment.getUser().getUsername(),
                     comment.getContent(),
                     comment.getTimestamp().toString(),
                     comment.getMovie().getTitle(),

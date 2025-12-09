@@ -10,6 +10,7 @@ export interface TmdbMovie {
   voteCount: number
   rating: number
   posterUrl: string | null
+  comments: Comment[]
 }
 
 export interface TmdbMovieDetailsActors {
@@ -32,6 +33,7 @@ export interface MovieSummary {
 
 export interface Comment {
   id: number
+  username: string
   content: string
   timestamp: string
   movieTitle: string
