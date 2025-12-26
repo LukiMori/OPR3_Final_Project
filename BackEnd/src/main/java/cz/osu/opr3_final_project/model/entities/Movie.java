@@ -40,37 +40,7 @@ public class Movie {
     )
     private List<Genre> genres = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "movies_directors",
-            joinColumns = @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name = "person_id")
-    )
-    private List<Person> directors = new ArrayList<>();
-
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-    private List<MovieActor> movieActors = new ArrayList<>();
-
-    @Column(nullable = false)
-    private Long voteTotal = 0L;
-
-    @Column(nullable = false)
-    private Integer voteCount = 0;
-
-    @Column
-    private double rating;
-
     @Column
     private String posterUrl;
-
-    public void addVote(int voteValue) {
-        this.voteTotal += voteValue;
-        this.voteCount++;
-        this.rating = voteCount > 0 ? (double) voteTotal / voteCount : 0.0;
-    }
-
-    public void recalculateRating() {
-        this.rating = voteCount > 0 ? (double) voteTotal / voteCount : 0.0;
-    }
 
 }

@@ -20,18 +20,11 @@ public class MovieController {
     private final TmdbService tmdbService;
     private final MovieService movieService;
     private final UserRepository userRepository;
-    private final MovieActorRepository movieActorRepository;
-    private final GenreRepository genreRepository;
-    private final PersonRepository personRepository;
-
-    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, UserRepository userRepository, MovieActorRepository movieActorRepository, GenreRepository genreRepository, PersonRepository personRepository) {
+    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, UserRepository userRepository) {
         this.movieRepository = movieRepository;
         this.tmdbService = tmdbService;
         this.movieService = movieService;
         this.userRepository = userRepository;
-        this.movieActorRepository = movieActorRepository;
-        this.genreRepository = genreRepository;
-        this.personRepository = personRepository;
     }
 
     @GetMapping("/{ID}")
@@ -41,27 +34,7 @@ public class MovieController {
 
         if (movieToReturn == null) {
             movieDTOToReturn = tmdbService.getMovieDetails(ID);
-            System.out.println("Movie not found in local database. Fetched from TMDB.");
         } else {
-            System.out.println("Movie found in local database.");
-            List<MovieActor> movieActors = movieToReturn.getMovieActors();
-            List<Person> movieDirectors = movieToReturn.getDirectors();
-
-            List<TmdbMovieDetailsActorDTO> actorDTOs = movieActors.stream()
-                    .map(ma -> new TmdbMovieDetailsActorDTO(
-                            ma.getPerson().getId(),
-                            ma.getPerson().getName(),
-                            ma.getCharacterName()
-                    ))
-                    .collect(Collectors.toList());
-
-            List<TmdbMovieDetailsDirectorDTO> directorDTOs = movieDirectors.stream()
-                    .map(director -> new TmdbMovieDetailsDirectorDTO(
-                            director.getId(),
-                            director.getName()
-                    ))
-                    .collect(Collectors.toList());
-
             List<String> genres = movieToReturn.getGenres().stream().map(Genre::getName).collect(Collectors.toList());
 
             List<CommentDTO> comments = movieToReturn.getComments().stream().map(comment -> new CommentDTO(comment.getId(), comment.getUser().getUsername(), comment.getContent(), comment.getTimestamp().toString(), comment.getMovie().getTitle(), comment.getMovie().getId())).toList();
@@ -71,13 +44,8 @@ public class MovieController {
                     movieToReturn.getTitle(),
                     movieToReturn.getReleaseDate(),
                     movieToReturn.getDescription(),
-                    directorDTOs,
-                    actorDTOs,
                     genres,
                     comments,
-                    movieToReturn.getVoteTotal(),
-                    movieToReturn.getVoteCount(),
-                    movieToReturn.getRating(),
                     movieToReturn.getPosterUrl()
             );
         }

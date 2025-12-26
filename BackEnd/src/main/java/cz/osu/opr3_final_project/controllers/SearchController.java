@@ -1,7 +1,6 @@
 package cz.osu.opr3_final_project.controllers;
 
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieSearchDTO;
-import cz.osu.opr3_final_project.dtos.tmdb.TmdbPersonSearchDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbSearchResultsDTO;
 import cz.osu.opr3_final_project.services.TmdbService;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +21,6 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "") String query) {
 
         TmdbSearchResultsDTO<TmdbMovieSearchDTO> results = tmdbService.searchMovies(query);
-        return ResponseEntity.ok(results);
-    }
-
-    @GetMapping("/people")
-    public ResponseEntity<TmdbSearchResultsDTO<TmdbPersonSearchDTO>> searchPeople(
-            @RequestParam(required = false, defaultValue = "") String query) {
-
-        TmdbSearchResultsDTO<TmdbPersonSearchDTO> results = tmdbService.searchPeople(query);
         return ResponseEntity.ok(results);
     }
 }

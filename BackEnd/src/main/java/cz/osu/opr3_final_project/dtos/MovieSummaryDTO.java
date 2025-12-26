@@ -4,6 +4,5 @@ public record MovieSummaryDTO(
         Long id,
         String title,
         String posterUrl,
-        Integer releaseYear,
-        Double rating
+        Integer releaseYear
 ) {}

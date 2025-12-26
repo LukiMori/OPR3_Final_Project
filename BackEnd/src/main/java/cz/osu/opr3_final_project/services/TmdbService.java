@@ -3,8 +3,6 @@ package cz.osu.opr3_final_project.services;
 import cz.osu.opr3_final_project.dtos.tmdb.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.osu.opr3_final_project.model.entities.Comment;
-import cz.osu.opr3_final_project.model.entities.Genre;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -72,44 +70,6 @@ public class TmdbService {
     }
 
 
-    public TmdbSearchResultsDTO<TmdbPersonSearchDTO> searchPeople(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return new TmdbSearchResultsDTO<>(List.of(), 0);
-        }
-
-        String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/search/person")
-                .queryParam("api_key", apiKey)
-                .queryParam("query", query)
-                .queryParam("language", "en-US")
-                .toUriString();
-
-        try {
-            String response = restTemplate.getForObject(url, String.class);
-            JsonNode root = objectMapper.readTree(response);
-
-            List<TmdbPersonSearchDTO> people = new ArrayList<>();
-            JsonNode results = root.get("results");
-
-            if (results != null && results.isArray()) {
-                for (JsonNode personNode : results) {
-                    people.add(new TmdbPersonSearchDTO(
-                            personNode.get("id").asLong(),
-                            personNode.has("name") ? personNode.get("name").asText() : "",
-                            personNode.has("profile_path") && !personNode.get("profile_path").isNull()
-                                    ? personNode.get("profile_path").asText() : null
-                    ));
-                }
-            }
-
-            int totalResults = root.has("total_results") ? root.get("total_results").asInt() : 0;
-            return new TmdbSearchResultsDTO<>(people, totalResults);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new TmdbSearchResultsDTO<>(List.of(), 0);
-        }
-    }
-
     public TmdbMovieDetailsDTO getMovieDetails(Long movieId) {
         if (movieId == null) {
             return null;
@@ -172,13 +132,8 @@ public class TmdbService {
                         movieRoot.has("title") ? movieRoot.get("title").asText() : "",
                         movieRoot.has("release_date") ? movieRoot.get("release_date").asText() : null,
                         movieRoot.has("overview") ? movieRoot.get("overview").asText() : "",
-                        directors,
-                        actors,
                         genres,
                         null,
-                        0L,
-                        0,
-                        0.0,
                         movieRoot.has("poster_path") && !movieRoot.get("poster_path").isNull()
                                 ? movieRoot.get("poster_path").asText() : null
                 );
@@ -192,40 +147,5 @@ public class TmdbService {
             return null;
         }
     }
-
-    public TmdbPersonDetailsDTO getPersonDetails(Long personId) {
-        if (personId == null) {
-            return null;
-        }
-
-        String personUrl = UriComponentsBuilder.fromHttpUrl(baseUrl + "/person/" + personId)
-                .queryParam("api_key", apiKey)
-                .queryParam("language", "en-US")
-                .toUriString();
-
-
-        try {
-            String personResponse = restTemplate.getForObject(personUrl, String.class);
-            JsonNode personRoot = objectMapper.readTree(personResponse);
-
-            if (personRoot != null) {
-
-                return new TmdbPersonDetailsDTO(
-                        personRoot.get("id").asLong(),
-                        personRoot.has("name") ? personRoot.get("name").asText() : "",
-                        personRoot.has("biography") ? personRoot.get("biography").asText() : "",
-                        personRoot.has("birthday") && !personRoot.get("birthday").isNull()
-                                ? personRoot.get("birthday").asText() : null
-                );
-            } else {
-                return null;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
 
 }

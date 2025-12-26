@@ -1,7 +1,6 @@
 import type { AuthResponse, LoginRequest, SignupRequest, UserProfile } from '../types/types.ts'
 import type { TmdbSearchResults } from '../types/tmdb'
 import type { MovieSummary, TmdbMovie, Comment } from '../types/movie.ts'
-import type { PersonSummary } from '../types/person.ts'
 
 const API_BASE_URL = 'http://localhost:8080'
 
@@ -122,19 +121,6 @@ export const api = {
 
     if (!response.ok) {
       throw new Error('Failed to search movies')
-    }
-
-    return response.json()
-  },
-
-  searchPeople: async (query: string): Promise<TmdbSearchResults<PersonSummary>> => {
-    const response = await fetch(`${API_BASE_URL}/api/search/people?query=${encodeURIComponent(query)}`, {
-      method: 'GET',
-      headers: getAuthHeaders()
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to search people')
     }
 
     return response.json()

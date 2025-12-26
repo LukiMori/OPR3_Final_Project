@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Star, Calendar, Users, Heart, MessageSquare } from 'lucide-react'
+import { Calendar, Heart, MessageSquare } from 'lucide-react'
 import { api } from '../services/api.ts'
 import { useParams } from 'react-router-dom'
 
@@ -156,28 +156,6 @@ const Movie = () => {
                 </button>
               </div>
             </div>
-
-            <div className='flex items-center gap-6 mb-6 pb-6 border-b border-primary-dark/10 dark:border-dark-text/10'>
-              <div className='flex items-center gap-2'>
-                <Star size={24} className='text-accent-orange fill-accent-orange' />
-
-                {movie.voteCount === 0 ? (
-                  <span className='text-gray-500'>No votes yet</span>
-                ) : (
-                  <>
-                    <span className='text-2xl font-bold text-primary-dark dark:text-dark-text'>
-                      {movie.rating.toFixed(1)}
-                    </span>
-                    <span className='text-primary-dark/70 dark:text-dark-text/70'>/ 10</span>
-                  </>
-                )}
-              </div>
-              <div className='flex items-center gap-2 text-primary-dark/70 dark:text-dark-text/70'>
-                <Users size={18} />
-                <span>{movie.voteCount.toLocaleString()} votes</span>
-              </div>
-            </div>
-
             <div>
               <h2 className='text-2xl font-bold text-primary-dark dark:text-dark-text mb-3'>Overview</h2>
               <p className='text-primary-dark/80 dark:text-dark-text/80 leading-relaxed'>{movie.description}</p>

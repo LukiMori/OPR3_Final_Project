@@ -10,13 +10,8 @@ public record TmdbMovieDetailsDTO (
         String title,
         String releaseDate,
         String description,
-        List<TmdbMovieDetailsDirectorDTO> directors,
-        List<TmdbMovieDetailsActorDTO> actors,
         List<String> genre,
         List<CommentDTO> comments,
-        Long voteTotal,
-        Integer voteCount,
-        Double rating,
         String posterUrl
 ) {
 }

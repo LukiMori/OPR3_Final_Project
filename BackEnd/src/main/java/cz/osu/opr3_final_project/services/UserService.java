@@ -43,8 +43,7 @@ public class UserService {
                     movie.getId(),
                     movie.getTitle(),
                     movie.getPosterUrl(),
-                    parseInt(movie.getReleaseDate().substring(0, 4)),
-                    movie.getRating()
+                    parseInt(movie.getReleaseDate().substring(0, 4))
             ));
         });
 
