@@ -70,10 +70,12 @@ const Movie = () => {
       setMovie((prev) => {
         if (!prev) return prev
 
+        const currentComments = prev.comments || []
+
         return {
           ...prev,
-          comments: [...prev.comments, newCommentData],
-          totalComments: prev.comments.length + 1
+          comments: [...currentComments, newCommentData],
+          totalComments: currentComments.length + 1
         }
       })
 
@@ -93,7 +95,8 @@ const Movie = () => {
       setMovie((prev) => {
         if (!prev) return prev
 
-        const updatedComments = prev.comments.filter((comment) => comment.id !== commentId)
+        const currentComments = prev.comments || []
+        const updatedComments = currentComments.filter((comment) => comment.id !== commentId)
 
         return {
           ...prev,

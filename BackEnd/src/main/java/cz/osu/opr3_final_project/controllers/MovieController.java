@@ -2,6 +2,7 @@ package cz.osu.opr3_final_project.controllers;
 
 import cz.osu.opr3_final_project.dtos.CommentDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDTO;
+import cz.osu.opr3_final_project.logging.ActivityLogger;
 import cz.osu.opr3_final_project.model.entities.*;
 import cz.osu.opr3_final_project.repositories.*;
 import cz.osu.opr3_final_project.services.MovieService;
@@ -21,12 +22,14 @@ public class MovieController {
     private final TmdbService tmdbService;
     private final MovieService movieService;
     private final UserRepository userRepository;
+    private final ActivityLogger activityLogger;
 
-    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, UserRepository userRepository) {
+    public MovieController(MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, UserRepository userRepository, ActivityLogger activityLogger) {
         this.movieRepository = movieRepository;
         this.tmdbService = tmdbService;
         this.movieService = movieService;
         this.userRepository = userRepository;
+        this.activityLogger = activityLogger;
     }
 
     @GetMapping("/{ID}")
@@ -113,6 +116,7 @@ public class MovieController {
             }
 
             Movie movie = movieRepository.findById(movieId).orElse(null);
+            String movieTitle;
 
             if (movie == null) {
                 TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
@@ -122,13 +126,43 @@ public class MovieController {
                 Movie movieToAdd = movieService.createMovieIfNotExists(movieDetailsDTO);
                 user.getFavouriteMovies().add(movieToAdd);
                 userRepository.save(user);
+
+                movieTitle = movieDetailsDTO.title();
+
+                activityLogger.logMovieLike(
+                        user.getId(),
+                        user.getUsername(),
+                        movieId,
+                        movieTitle,
+                        true
+                );
             } else {
+
+                movieTitle = movie.getTitle();
+
                 if (currentMovieLikedStatus) {
                     user.getFavouriteMovies().add(movie);
                     userRepository.save(user);
+
+
+                    activityLogger.logMovieLike(
+                            user.getId(),
+                            user.getUsername(),
+                            movieId,
+                            movieTitle,
+                            true
+                    );
                 } else {
                     user.getFavouriteMovies().remove(movie);
                     userRepository.save(user);
+
+                    activityLogger.logMovieLike(
+                            user.getId(),
+                            user.getUsername(),
+                            movieId,
+                            movieTitle,
+                            false
+                    );
                 }
             }
 

@@ -3,6 +3,7 @@ package cz.osu.opr3_final_project.controllers;
 import cz.osu.opr3_final_project.dtos.CommentDTO;
 import cz.osu.opr3_final_project.dtos.NewCommentRequestDTO;
 import cz.osu.opr3_final_project.dtos.tmdb.TmdbMovieDetailsDTO;
+import cz.osu.opr3_final_project.logging.ActivityLogger;
 import cz.osu.opr3_final_project.model.entities.Comment;
 import cz.osu.opr3_final_project.model.entities.Movie;
 import cz.osu.opr3_final_project.model.entities.User;
@@ -25,13 +26,15 @@ public class CommentController {
     private final MovieRepository movieRepository;
     private final TmdbService tmdbService;
     private final MovieService movieService;
+    private final ActivityLogger activityLogger;
 
-    public CommentController(CommentRepository commentRepository, UserRepository userRepository, MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService) {
+    public CommentController(CommentRepository commentRepository, UserRepository userRepository, MovieRepository movieRepository, TmdbService tmdbService, MovieService movieService, ActivityLogger activityLogger) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
         this.tmdbService = tmdbService;
         this.movieService = movieService;
+        this.activityLogger = activityLogger;
     }
 
     @PutMapping("/{movieId}/comments")
@@ -48,6 +51,8 @@ public class CommentController {
             newComment.setUser(user);
             newComment.setTimestamp(Instant.now());
 
+            String movieTitle;
+
             if (movie == null) {
                 TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
                 if (movieDetailsDTO == null) {
@@ -61,16 +66,27 @@ public class CommentController {
                 movieToAdd.getComments().add(newComment);
                 movieRepository.save(movieToAdd);
 
-
+                movieTitle = movieDetailsDTO.title();
             } else {
                 newComment.setMovie(movie);
                 movie.getComments().add(newComment);
                 commentRepository.save(newComment);
                 movieRepository.save(movie);
+
+                movieTitle = movie.getTitle();
+
             }
 
             user.getComments().add(newComment);
             userRepository.save(user);
+
+            activityLogger.logComment(
+                    user.getId(),
+                    user.getUsername(),
+                    movieId,
+                    movieTitle,
+                    newCommentRequestDTO.content()
+            );
 
             CommentDTO commentDTO = new CommentDTO(
                     newComment.getId(),
@@ -99,6 +115,13 @@ public class CommentController {
             if (!comment.getUser().getId().equals(userId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only delete your own comments");
             }
+
+            activityLogger.logCommentDeletion(
+                    comment.getUser().getId(),
+                    comment.getUser().getUsername(),
+                    commentId,
+                    comment.getMovie().getTitle()
+            );
 
             commentRepository.delete(comment);
             return ResponseEntity.ok("Comment deleted successfully");

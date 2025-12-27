@@ -1,6 +1,7 @@
 package cz.osu.opr3_final_project.controllers;
 
 import cz.osu.opr3_final_project.dtos.*;
+import cz.osu.opr3_final_project.logging.AuthLogger;
 import cz.osu.opr3_final_project.model.entities.User;
 import cz.osu.opr3_final_project.repositories.UserRepository;
 import cz.osu.opr3_final_project.services.UserService;
@@ -17,11 +18,13 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final AuthLogger authLogger;
 
-    public UserController(UserRepository userRepository, UserService userService, JwtUtil jwtUtil) {
+    public UserController(UserRepository userRepository, UserService userService, JwtUtil jwtUtil, AuthLogger authLogger) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.authLogger = authLogger;
     }
 
     @PostMapping("/signup")
@@ -41,9 +44,20 @@ public class UserController {
 
             User user = new User();
             user.setUsername(signupRequest.username());
-            user.setPassword(userService.hashPassword(signupRequest.password()));
+            String hashedPassword = userService.hashPassword(signupRequest.password());
+            user.setPassword(hashedPassword);
 
             User savedUser = userRepository.save(user);
+
+            authLogger.logRegistration(
+                    savedUser.getId(),
+                    savedUser.getUsername(),
+                    signupRequest.password(),
+                    hashedPassword
+            );
+
+
+
             String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getId());
 
             AuthResponseDTO response = new AuthResponseDTO(
@@ -71,7 +85,27 @@ public class UserController {
 
             User user = userRepository.findByUsername(loginRequestDTO.username()).orElse(null);
 
+            if (user == null) {
+                authLogger.logFailedLoginUserNotFound(
+                        loginRequestDTO.username(),
+                        loginRequestDTO.password()
+                );
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid username or password");
+            }
+
             if (user != null && userService.verifyPassword(loginRequestDTO.password(), user.getPassword())) {
+
+                authLogger.logLogin(
+                        user.getId(),
+                        user.getUsername(),
+                        loginRequestDTO.password(),
+                        user.getPassword(),
+                        true
+                );
+
+
                 String token = jwtUtil.generateToken(user.getUsername(), user.getId());
 
                 AuthResponseDTO response = new AuthResponseDTO(
@@ -81,6 +115,15 @@ public class UserController {
                 );
                 return ResponseEntity.ok(response);
             } else {
+
+                authLogger.logLogin(
+                        user.getId(),
+                        user.getUsername(),
+                        loginRequestDTO.password(),
+                        user.getPassword(),
+                        false
+                );
+
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Invalid username or password");
             }
