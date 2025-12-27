@@ -50,9 +50,7 @@ const Header = () => {
         />
         <div className='flex-1 min-w-0'>
           <h4 className='font-semibold text-primary-dark dark:text-dark-text truncate'>{movie.title}</h4>
-          <p className='text-sm text-primary-dark/70 dark:text-dark-text/70'>
-            {movie.releaseYear ? new Date(movie.releaseYear).getFullYear() : 'N/A'}
-          </p>
+          <p className='text-sm text-primary-dark/70 dark:text-dark-text/70'>{movie.releaseYear || 'N/A'}</p>
         </div>
       </div>
     )

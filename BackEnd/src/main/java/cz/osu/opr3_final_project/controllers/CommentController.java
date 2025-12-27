@@ -11,6 +11,8 @@ import cz.osu.opr3_final_project.repositories.MovieRepository;
 import cz.osu.opr3_final_project.repositories.UserRepository;
 import cz.osu.opr3_final_project.services.MovieService;
 import cz.osu.opr3_final_project.services.TmdbService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -33,65 +35,77 @@ public class CommentController {
     }
 
     @PutMapping("/{movieId}/comments")
-    public CommentDTO addNewComment(@PathVariable Long movieId, @RequestBody NewCommentRequestDTO newCommentRequestDTO) {
-        User user = userRepository.findById(newCommentRequestDTO.userId()).orElse(null);
-        if (user == null) {
-            return null;
-        }
-        Movie movie = movieRepository.findById(movieId).orElse(null);
-
-        Comment newComment = new Comment();
-        newComment.setContent(newCommentRequestDTO.content());
-        newComment.setUser(user);
-        newComment.setTimestamp(Instant.now());
-
-        if (movie == null) {
-            TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
-            if (movieDetailsDTO == null) {
-                return null;
+    public ResponseEntity<?> addNewComment(@PathVariable Long movieId, @RequestBody NewCommentRequestDTO newCommentRequestDTO) {
+        try {
+            User user = userRepository.findById(newCommentRequestDTO.userId()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
-            Movie movieToAdd = movieService.createMovieIfNotExists(movieDetailsDTO);
+            Movie movie = movieRepository.findById(movieId).orElse(null);
 
-            newComment.setMovie(movieToAdd);
-            commentRepository.save(newComment);
+            Comment newComment = new Comment();
+            newComment.setContent(newCommentRequestDTO.content());
+            newComment.setUser(user);
+            newComment.setTimestamp(Instant.now());
 
-            movieToAdd.getComments().add(newComment);
-            movieRepository.save(movieToAdd);
+            if (movie == null) {
+                TmdbMovieDetailsDTO movieDetailsDTO = tmdbService.getMovieDetails(movieId);
+                if (movieDetailsDTO == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Movie not found in the TMDB database");
+                }
+                Movie movieToAdd = movieService.createMovieIfNotExists(movieDetailsDTO);
+
+                newComment.setMovie(movieToAdd);
+                commentRepository.save(newComment);
+
+                movieToAdd.getComments().add(newComment);
+                movieRepository.save(movieToAdd);
 
 
-        } else {
-            newComment.setMovie(movie);
-            movie.getComments().add(newComment);
+            } else {
+                newComment.setMovie(movie);
+                movie.getComments().add(newComment);
+                commentRepository.save(newComment);
+                movieRepository.save(movie);
+            }
 
             user.getComments().add(newComment);
             userRepository.save(user);
+
+            CommentDTO commentDTO = new CommentDTO(
+                    newComment.getId(),
+                    newComment.getUser().getUsername(),
+                    newComment.getContent(),
+                    newComment.getTimestamp().toString(),
+                    newComment.getMovie().getTitle(),
+                    newComment.getMovie().getId()
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(commentDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to add comment: " + e.getMessage());
         }
-
-        user.getComments().add(newComment);
-        userRepository.save(user);
-
-        return new CommentDTO(
-                newComment.getId(),
-                newComment.getUser().getUsername(),
-                newComment.getContent(),
-                newComment.getTimestamp().toString(),
-                newComment.getMovie().getTitle(),
-                newComment.getMovie().getId()
-        );
     }
 
     @DeleteMapping("/{commentId}/deleteComment")
-    public boolean deleteComment(@PathVariable Long commentId, @RequestBody Long userId) {
-        Comment comment = commentRepository.findById(commentId).orElse(null);
-        if (comment == null) {
-            return false;
-        }
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, @RequestBody Long userId) {
+        try {
+            Comment comment = commentRepository.findById(commentId).orElse(null);
+            if (comment == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Comment not found");
+            }
 
-        if (!comment.getUser().getId().equals(userId)) {
-            return false;
-        }
+            if (!comment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only delete your own comments");
+            }
 
-        commentRepository.delete(comment);
-        return true;
+            commentRepository.delete(comment);
+            return ResponseEntity.ok("Comment deleted successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to delete comment: " + e.getMessage());
+        }
     }
 }

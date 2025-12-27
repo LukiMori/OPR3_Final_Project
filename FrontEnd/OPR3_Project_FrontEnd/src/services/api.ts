@@ -3,6 +3,7 @@ import type { TmdbSearchResults } from '../types/tmdb'
 import type { MovieSummary, TmdbMovie, Comment } from '../types/movie.ts'
 
 const API_BASE_URL = 'http://localhost:8080'
+const REQUEST_TIMEOUT = 10000
 
 const getToken = (): string | null => {
   return localStorage.getItem('token')
@@ -13,6 +14,26 @@ const getAuthHeaders = (): HeadersInit => {
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })
+  }
+}
+
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = REQUEST_TIMEOUT): Promise<Response> => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout')
+    }
+    throw error
   }
 }
 
@@ -27,9 +48,6 @@ export const api = {
     })
 
     if (!response.ok) {
-      if (response.status === 409) {
-        throw new Error('Username already exists')
-      }
       const errorText = await response.text()
       throw new Error(errorText || 'Signup failed')
     }
@@ -47,9 +65,6 @@ export const api = {
     })
 
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Invalid username or password')
-      }
       const errorText = await response.text()
       throw new Error(errorText || 'Login failed')
     }
@@ -78,16 +93,14 @@ export const api = {
   },
 
   getUserProfile: async (): Promise<UserProfile> => {
-    const response = await fetch(`${API_BASE_URL}/profile`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile`, {
       method: 'GET',
       headers: getAuthHeaders()
     })
 
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Unauthorized')
-      }
-      throw new Error('Failed to fetch profile')
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to fetch profile')
     }
 
     return response.json()
@@ -101,20 +114,15 @@ export const api = {
     })
 
     if (!response.ok) {
-      if (response.status === 409) {
-        throw new Error('Username already exists')
-      }
-      if (response.status === 401) {
-        throw new Error('Unauthorized')
-      }
-      throw new Error('Failed to update username')
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to update username')
     }
 
     return response.json()
   },
 
   searchMovies: async (query: string): Promise<TmdbSearchResults<MovieSummary>> => {
-    const response = await fetch(`${API_BASE_URL}/api/search/movies?query=${encodeURIComponent(query)}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/search/movies?query=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: getAuthHeaders()
     })
@@ -132,30 +140,34 @@ export const api = {
   },
 
   getMovieDetails: async (movieId: number): Promise<TmdbMovie> => {
-    const response = await fetch(`${API_BASE_URL}/api/movie/${movieId}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/movie/${movieId}`, {
       method: 'GET',
       headers: getAuthHeaders()
     })
 
     if (!response.ok) {
-      throw new Error('Failed to fetch movie details')
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to fetch movie details')
     }
+
     return response.json()
   },
 
   isMovieLikedByUser: async (movieId: number, userId: number): Promise<boolean> => {
-    const response = await fetch(`${API_BASE_URL}/api/movie/${movieId}/isLiked?userId=${userId}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/movie/${movieId}/isLiked?userId=${userId}`, {
       method: 'GET',
       headers: getAuthHeaders()
     })
+
     if (!response.ok) {
       throw new Error('Failed to check if movie is liked')
     }
+
     return response.json()
   },
 
   changeMovieLikedByUserId: async (movieId: number, userId: number, newMovieLikedStatus: boolean): Promise<void> => {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/movie/${movieId}/changeLikedStatus?userId=${userId}&currentMovieLikedStatus=${newMovieLikedStatus}`,
       {
         method: 'PUT',
@@ -163,13 +175,13 @@ export const api = {
       }
     )
     if (!response.ok) {
-      throw new Error('Failed to change likedStatus')
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to change liked status')
     }
-    return response.json()
   },
 
   addCommentToMovieByUser: async (movieId: number, userId: number, commentContent: string): Promise<Comment> => {
-    const response = await fetch(`${API_BASE_URL}/api/comment/${movieId}/comments`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/comment/${movieId}/comments`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -177,23 +189,27 @@ export const api = {
         content: commentContent
       })
     })
+
     if (!response.ok) {
-      console.log(response)
-      throw new Error('Failed to add comment')
+      const errorText = await response.text()
+      console.error('Failed to add comment:', errorText)
+      throw new Error(errorText || 'Failed to add comment')
     }
+
     return response.json()
   },
 
   deleteCommentFromMovie: async (commentId: number, userId: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/api/comment/${commentId}/deleteComment`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/comment/${commentId}/deleteComment`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
       body: JSON.stringify(userId)
     })
+
     if (!response.ok) {
-      console.log(response)
-      throw new Error('Failed to remove comment')
+      const errorText = await response.text()
+      console.error('Failed to remove comment:', errorText)
+      throw new Error(errorText || 'Failed to remove comment')
     }
-    return response.json()
   }
 }

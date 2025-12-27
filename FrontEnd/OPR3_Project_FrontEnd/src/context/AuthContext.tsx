@@ -1,74 +1,67 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Types, AuthResponse } from "../types/types.ts";
-import { api } from "../services/api";
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import type { Types, AuthResponse } from '../types/types.ts'
+import { api } from '../services/api'
 
 interface AuthContextType {
-  user: Types | null;
-  loading: boolean;
-  login: (authResponse: AuthResponse) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
+  user: Types | null
+  loading: boolean
+  login: (authResponse: AuthResponse) => void
+  logout: () => void
+  isAuthenticated: boolean
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<Types | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<Types | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Verify token on mount
   useEffect(() => {
     const verifyToken = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token')
 
       if (token) {
         try {
-          const authResponse = await api.verifyToken();
+          const authResponse = await api.verifyToken()
           setUser({
             id: authResponse.id,
-            username: authResponse.username,
-          });
+            username: authResponse.username
+          })
         } catch (error) {
-          // Token is invalid, clear it
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          console.error('Token verification failed:', error)
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
         }
       }
 
-      setLoading(false);
-    };
+      setLoading(false)
+    }
 
-    verifyToken();
-  }, []);
+    verifyToken()
+  }, [])
 
   const login = (authResponse: AuthResponse) => {
-    localStorage.setItem("token", authResponse.token);
+    localStorage.setItem('token', authResponse.token)
     localStorage.setItem(
-      "user",
+      'user',
       JSON.stringify({
         id: authResponse.id,
-        username: authResponse.username,
-      }),
-    );
+        username: authResponse.username
+      })
+    )
     setUser({
       id: authResponse.id,
-      username: authResponse.username,
-    });
-  };
+      username: authResponse.username
+    })
+  }
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-  };
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setUser(null)
+  }
 
   return (
     <AuthContext.Provider
@@ -77,18 +70,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         login,
         logout,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user
       }}
     >
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
+  return context
+}

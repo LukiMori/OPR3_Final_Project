@@ -7,6 +7,8 @@ import cz.osu.opr3_final_project.repositories.GenreRepository;
 import cz.osu.opr3_final_project.repositories.MovieRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 public class MovieService {
 
@@ -19,6 +21,10 @@ public class MovieService {
     }
 
     public Movie createMovieIfNotExists(TmdbMovieDetailsDTO movieDetailsDTO) {
+        if (movieDetailsDTO == null) {
+            throw new IllegalArgumentException("Movie details cannot be null");
+        }
+
         Movie newMovie = new Movie();
         newMovie.setId(movieDetailsDTO.id());
         newMovie.setTitle(movieDetailsDTO.title());
@@ -26,14 +32,22 @@ public class MovieService {
         newMovie.setDescription(movieDetailsDTO.description());
         newMovie.setPosterUrl(movieDetailsDTO.posterUrl());
 
-        for (String genre : movieDetailsDTO.genre()) {
-            Genre genreEntity = genreRepository.findByName(genre)
-                    .orElseGet(() -> {
-                        Genre newGenre = new Genre();
-                        newGenre.setName(genre);
-                        return genreRepository.save(newGenre);
-                    });
-            newMovie.getGenres().add(genreEntity);
+        if (newMovie.getGenres() == null) {
+            newMovie.setGenres(new ArrayList<>());
+        }
+
+        if (movieDetailsDTO.genre() != null) {
+            for (String genreName : movieDetailsDTO.genre()) {
+                if (genreName != null && !genreName.trim().isEmpty()) {
+                    Genre genreEntity = genreRepository.findByName(genreName)
+                            .orElseGet(() -> {
+                                Genre newGenre = new Genre();
+                                newGenre.setName(genreName);
+                                return genreRepository.save(newGenre);
+                            });
+                    newMovie.getGenres().add(genreEntity);
+                }
+            }
         }
 
         movieRepository.save(newMovie);
